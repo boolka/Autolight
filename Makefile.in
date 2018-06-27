@@ -1,0 +1,44 @@
+.PHONY: prestart, clean
+
+BINDIR = @bindir@
+
+# `DEBUG=1 make` for debug assembly
+
+# If you switch compilation type some symbols may still be in objects.
+# Make don't fires some rules because of no changes in compile files.
+# In this case linker stops assembly bacause he don't see symbols (from DEBUG assembly for example).
+# So we need to clear objects (run `make clean` command) when compile mode is changed.
+
+CC_OPTIONS = -Wall
+PROG_NAME = autolight
+BUILD_DIR = ./bin
+LIB_DIR = ./lib
+SO_LIBS = -ljpeg -lm -lxcb -lxcb-util -lxcb-randr
+OBJECTS = $(BUILD_DIR)/$(PROG_NAME).o $(BUILD_DIR)/xws.o $(BUILD_DIR)/v4l2.o 
+
+ifdef DEBUG
+CC_OPTIONS += -g -DDEBUG
+endif
+
+build: $(OBJECTS)
+	gcc $(CC_OPTIONS) $(OBJECTS) $(SO_LIBS) -o $(BUILD_DIR)/$(PROG_NAME)
+
+$(BUILD_DIR)/$(PROG_NAME).o: $(PROG_NAME).c
+	mkdir -p bin
+	gcc $(CC_OPTIONS) -o $@ -c $^
+
+$(BUILD_DIR)/xws.o: $(LIB_DIR)/xws.c
+	gcc $(CC_OPTIONS) -o $@ -c $^
+
+$(BUILD_DIR)/v4l2.o: $(LIB_DIR)/v4l2.c
+	gcc $(CC_OPTIONS) -o $@ -c $^
+
+ifndef DEBUG
+install: build
+	install bin/autolight $(BINDIR)
+uninstall: build
+	rm $(BINDIR)/autolight
+endif
+
+clean:
+	-rm $(BUILD_DIR)/*.o $(BUILD_DIR)/$(PROG_NAME) $(BUILD_DIR)/*.bmp *.bmp

@@ -1,0 +1,15 @@
+.*
+!.gitignore
+
+*.o
+*.cache
+*.jpg
+
+config.log
+config.status
+
+/bin
+/examples
+/test
+
+Makefile
